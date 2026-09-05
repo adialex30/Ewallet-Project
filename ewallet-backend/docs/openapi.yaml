@@ -1,0 +1,920 @@
+openapi: 3.0.3
+
+info:
+  title: Simple E-Wallet API
+  description: |
+    REST API for the Simple E-Wallet System.
+
+    ## Authentication
+    All endpoints except `/auth/register`, `/auth/login`,
+    `/swagger-ui/**`, `/v3/api-docs/**` and `/h2-console/**`
+    require a JWT Bearer token.
+
+    Send the token in the request header:
+    `Authorization: Bearer <JWT_TOKEN>`
+
+    ## Roles
+    - USER and ADMIN can access their authenticated operations.
+    - ADMIN can retrieve all users.
+    - ADMIN can activate and deactivate users.
+    - USER and ADMIN can access wallet and transaction operations.
+  version: 1.2.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local Development Server
+
+tags:
+  - name: Auth
+    description: Registration and login APIs
+
+  - name: Users
+    description: User management APIs
+
+  - name: Wallets
+    description: Wallet operations APIs
+
+  - name: Transactions
+    description: Deposit, withdraw, transfer and transaction history APIs
+
+security:
+  - bearerAuth: []
+
+paths:
+
+
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      operationId: register
+      summary: Register a new user
+      description: Creates a new user account. Authentication is not required.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+
+        '409':
+          description: Email already exists
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Email already exists
+
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      operationId: login
+      summary: Login and obtain JWT
+      description: |
+        Authenticates the user using email and password and returns a JWT token.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+
+        '401':
+          description: Invalid email or password
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Invalid credentials
+
+
+
+  /users:
+    post:
+      tags:
+        - Users
+      operationId: createUser
+      summary: Create a new user
+      description: |
+        Creates a new user.
+        Requires an authenticated USER or ADMIN.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+        '409':
+          description: Email already exists
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Email already exists
+
+
+    get:
+      tags:
+        - Users
+      operationId: getAllUsers
+      summary: Get all users
+      description: |
+        Retrieves all users.
+        Requires ADMIN role.
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+
+  /users/{id}:
+    get:
+      tags:
+        - Users
+      operationId: getUserById
+      summary: Get user by ID
+      description: |
+        Retrieves a user by ID.
+        Requires USER or ADMIN role.
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+
+    put:
+      tags:
+        - Users
+      operationId: updateUser
+      summary: Update user
+      description: |
+        Updates an existing user's information.
+        Requires USER or ADMIN role.
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+
+  /users/{id}/deactivate:
+    patch:
+      tags:
+        - Users
+      operationId: deactivateUser
+      summary: Deactivate user
+      description: |
+        Deactivates an active user.
+        Requires ADMIN role.
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      responses:
+        '200':
+          description: User deactivated successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: User deactivated successfully
+
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+
+  /users/{id}/activate:
+    patch:
+      tags:
+        - Users
+      operationId: activateUser
+      summary: Activate user
+      description: |
+        Activates a deactivated user.
+        Requires ADMIN role.
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      responses:
+        '200':
+          description: User activated successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: User activated successfully
+
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+
+
+  /wallets/{walletId}:
+    get:
+      tags:
+        - Wallets
+      operationId: getWalletById
+      summary: Get wallet by ID
+      description: |
+        Retrieves a wallet by its ID.
+        The wallet service verifies the authenticated user's access.
+      parameters:
+        - $ref: '#/components/parameters/WalletIdPath'
+      responses:
+        '200':
+          description: Wallet retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletResponse'
+
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+
+  /wallets/{walletId}/balance:
+    get:
+      tags:
+        - Wallets
+      operationId: getWalletBalance
+      summary: Get wallet balance
+      description: |
+        Retrieves the current wallet balance.
+        The wallet service verifies the authenticated user's access.
+      parameters:
+        - $ref: '#/components/parameters/WalletIdPath'
+      responses:
+        '200':
+          description: Wallet balance retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletBalanceResponse'
+
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+
+  /wallets/{walletId}/deposit:
+    post:
+      tags:
+        - Wallets
+      operationId: walletDeposit
+      summary: Deposit money into wallet
+      description: |
+        Deposits money directly into a wallet.
+        Requires USER or ADMIN role.
+      parameters:
+        - $ref: '#/components/parameters/WalletIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepositRequest'
+      responses:
+        '200':
+          description: Money deposited successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletResponse'
+
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+
+
+  /api/transactions/wallets/{walletId}/deposit:
+    post:
+      tags:
+        - Transactions
+      operationId: deposit
+      summary: Deposit money
+      description: |
+        Deposits money into a wallet and creates a transaction record.
+        Requires USER or ADMIN role.
+      parameters:
+        - $ref: '#/components/parameters/WalletIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepositRequest'
+      responses:
+        '200':
+          description: Deposit transaction created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+
+        '400':
+          $ref: '#/components/responses/ValidationErrorResponse'
+
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+
+  /api/transactions/wallets/{walletId}/withdraw:
+    post:
+      tags:
+        - Transactions
+      operationId: withdraw
+      summary: Withdraw money
+      description: |
+        Withdraws money from a wallet.
+        Requires USER or ADMIN role.
+      parameters:
+        - $ref: '#/components/parameters/WalletIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WithdrawalRequest'
+      responses:
+        '200':
+          description: Withdrawal transaction created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+
+        '400':
+          description: Insufficient balance or invalid withdrawal data
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Insufficient balance
+
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+
+  /api/transactions/wallets/{walletId}/transfer:
+    post:
+      tags:
+        - Transactions
+      operationId: transfer
+      summary: Transfer money
+      description: |
+        Transfers money from one wallet to another.
+        Requires USER or ADMIN role.
+      parameters:
+        - $ref: '#/components/parameters/WalletIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+      responses:
+        '200':
+          description: Transfer transaction created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+
+        '400':
+          description: Insufficient balance or invalid transfer data
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Insufficient balance
+
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+        '404':
+          description: Source or destination wallet not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Destination wallet not found
+
+
+  /api/transactions/wallets/{walletId}/history:
+    get:
+      tags:
+        - Transactions
+      operationId: getTransactionHistory
+      summary: Get transaction history
+      description: |
+        Retrieves all transactions associated with a wallet.
+        Returns a list of transactions.
+        Requires USER or ADMIN role.
+      parameters:
+        - $ref: '#/components/parameters/WalletIdPath'
+      responses:
+        '200':
+          description: Transaction history retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionResponse'
+
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+
+  /api/transactions/{transactionId}:
+    get:
+      tags:
+        - Transactions
+      operationId: getTransactionById
+      summary: Get transaction by ID
+      description: |
+        Retrieves a transaction by its unique ID.
+        Requires USER or ADMIN role.
+      parameters:
+        - name: transactionId
+          in: path
+          required: true
+          description: Transaction ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Transaction retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+
+
+components:
+
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT access token returned by `/auth/login`.
+        Send it using:
+        Authorization: Bearer <token>
+
+
+
+  parameters:
+
+    UserIdPath:
+      name: id
+      in: path
+      required: true
+      description: User ID
+      schema:
+        type: integer
+        format: int64
+        example: 1
+
+    WalletIdPath:
+      name: walletId
+      in: path
+      required: true
+      description: Wallet ID
+      schema:
+        type: integer
+        format: int64
+        example: 1
+
+
+  # -------------------- COMMON RESPONSES --------------------
+
+  responses:
+
+    UnauthorizedError:
+      description: |
+        Authentication is required or the JWT token is missing/invalid.
+      content:
+        text/plain:
+          schema:
+            type: string
+            example: Unauthorized
+
+    ForbiddenError:
+      description: |
+        The authenticated user does not have sufficient permissions.
+      content:
+        text/plain:
+          schema:
+            type: string
+            example: Forbidden
+
+    NotFoundError:
+      description: Requested resource was not found.
+      content:
+        text/plain:
+          schema:
+            type: string
+            example: Resource not found
+
+    ValidationErrorResponse:
+      description: Request validation failed.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+          example:
+            email: must be a valid email
+            password: must be at least 8 characters
+
+
+
+  schemas:
+
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+
+        email:
+          type: string
+          format: email
+          example: admin@gmail.com
+          description: Registered user email
+
+        password:
+          type: string
+          format: password
+          example: Admin@123
+          description: User password
+
+
+    LoginResponse:
+      type: object
+      required:
+        - token
+      properties:
+
+        token:
+          type: string
+          description: Signed JWT access token
+          example: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBnbWFpbC5jb20ifQ.signature
+
+
+
+    UserRequest:
+      type: object
+      required:
+        - fullName
+        - email
+        - password
+        - role
+      properties:
+
+        fullName:
+          type: string
+          minLength: 3
+          maxLength: 50
+          example: Sandy Eissa
+          description: User's full name
+
+        email:
+          type: string
+          format: email
+          example: sandy@example.com
+          description: User's email address
+
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 20
+          example: Password123
+          description: User password
+
+        role:
+          $ref: '#/components/schemas/Role'
+
+
+    UserResponse:
+      type: object
+      properties:
+
+        id:
+          type: integer
+          format: int64
+          example: 1
+
+        fullName:
+          type: string
+          example: Sandy Eissa
+
+        email:
+          type: string
+          format: email
+          example: sandy@example.com
+
+        role:
+          $ref: '#/components/schemas/Role'
+
+        active:
+          type: boolean
+          example: true
+
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-08-17T10:30:00'
+
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-08-17T10:30:00'
+
+
+    Role:
+      type: string
+      enum:
+        - USER
+        - ADMIN
+      example: USER
+
+
+
+    WalletResponse:
+      type: object
+      properties:
+
+        id:
+          type: integer
+          format: int64
+          example: 1
+
+        balance:
+          type: number
+          format: double
+          example: 1000.00
+
+        version:
+          type: integer
+          format: int64
+          example: 0
+          description: Optimistic locking version number
+
+        userId:
+          type: integer
+          format: int64
+          example: 1
+
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-08-17T10:30:00'
+
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-08-17T10:30:00'
+
+
+    WalletBalanceResponse:
+      type: object
+      properties:
+
+        walletId:
+          type: integer
+          format: int64
+          example: 1
+
+        balance:
+          type: number
+          format: double
+          example: 1000.00
+
+
+
+    DepositRequest:
+      type: object
+      required:
+        - amount
+      properties:
+
+        amount:
+          type: number
+          format: double
+          minimum: 0.01
+          example: 500.00
+          description: Amount to deposit
+
+
+    WithdrawalRequest:
+      type: object
+      required:
+        - amount
+      properties:
+
+        amount:
+          type: number
+          format: double
+          minimum: 0.01
+          example: 200.00
+          description: Amount to withdraw
+
+
+    TransferRequest:
+      type: object
+      required:
+        - amount
+        - destinationWalletId
+      properties:
+
+        amount:
+          type: number
+          format: double
+          minimum: 0.01
+          example: 300.00
+          description: Amount to transfer
+
+        destinationWalletId:
+          type: integer
+          format: int64
+          example: 2
+          description: Destination wallet ID
+
+
+
+    TransactionResponse:
+      type: object
+      properties:
+
+        id:
+          type: integer
+          format: int64
+          example: 1
+
+        amount:
+          type: number
+          format: double
+          example: 500.00
+
+        type:
+          $ref: '#/components/schemas/TransactionType'
+
+        status:
+          $ref: '#/components/schemas/TransactionStatus'
+
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-08-21T10:30:00Z'
+
+        sourceWalletId:
+          type: integer
+          format: int64
+          nullable: true
+          example: 1
+
+        destinationWalletId:
+          type: integer
+          format: int64
+          nullable: true
+          example: 2
+
+
+    TransactionType:
+      type: string
+      enum:
+        - DEPOSIT
+        - WITHDRAW
+        - TRANSFER
+
+
+    TransactionStatus:
+      type: string
+      enum:
+        - PENDING
+        - SUCCESS
+        - FAILED

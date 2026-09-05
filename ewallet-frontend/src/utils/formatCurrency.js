@@ -15,7 +15,4 @@ export const formatDateTime = (isoString) => {
   }).format(new Date(isoString))
 }
 
-// Strips everything but digits as the user types, so the nominal input can
-// never contain symbols/letters/decimals in the first place - matching the
-// backend's whole-positive-integer validation rule.
 export const digitsOnly = (value) => value.replace(/[^\d]/g, '')

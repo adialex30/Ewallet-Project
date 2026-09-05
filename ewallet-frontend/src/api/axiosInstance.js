@@ -17,8 +17,6 @@ const axiosInstance = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-// Attach the JWT to every outgoing request. See AuthContext for how the
-// token gets in sessionStorage in the first place.
 axiosInstance.interceptors.request.use((config) => {
   const token = tokenStorage.get()
   if (token) {
@@ -27,9 +25,6 @@ axiosInstance.interceptors.request.use((config) => {
   return config
 })
 
-// Normalize every failure into { status, message, errors } so callers never
-// have to branch on "was this a network error, a validation error (422), or
-// a business error (400/404)?" - it's always the same shape.
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {

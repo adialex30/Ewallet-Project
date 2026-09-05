@@ -27,7 +27,6 @@ export default function RegisterPage() {
     try {
       await register(form)
       toast.success('Akun berhasil dibuat. Silakan masuk.')
-      // Convenience: log the person straight in instead of making them retype credentials.
       await login(form.email, form.password)
       navigate('/dashboard', { replace: true })
     } catch (err) {

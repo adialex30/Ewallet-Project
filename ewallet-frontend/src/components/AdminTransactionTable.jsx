@@ -18,9 +18,6 @@ const TYPE_LABEL = {
   TRANSFER: 'Transfer',
 }
 
-// Who to show in the "Pengguna" column - for a global admin log there's no
-// single "me", so unlike TransactionTable this always names the actual
-// person(s) involved instead of an in/out direction.
 function describeActor(tx) {
   if (tx.type === 'TRANSFER') {
     const from = tx.sourceUserFullName || `Wallet #${tx.sourceWalletId}`
@@ -30,7 +27,7 @@ function describeActor(tx) {
   if (tx.type === 'WITHDRAW') {
     return tx.sourceUserFullName || `Wallet #${tx.sourceWalletId}`
   }
-  // DEPOSIT
+
   return tx.destinationUserFullName || `Wallet #${tx.destinationWalletId}`
 }
 

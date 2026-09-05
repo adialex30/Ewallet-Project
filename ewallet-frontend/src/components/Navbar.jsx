@@ -22,9 +22,6 @@ export default function Navbar() {
     navigate('/login', { replace: true })
   }
 
-  // Admin's job here is user management + oversight, not a personal wallet,
-  // so Dashboard/Profil are User-only; Kelola Pengguna is Admin-only.
-  // Riwayat Transaksi is shared by both (everyone, admin included, has a wallet).
   const links = isAdmin
     ? [
         { to: '/admin/users', label: 'Kelola Pengguna' },

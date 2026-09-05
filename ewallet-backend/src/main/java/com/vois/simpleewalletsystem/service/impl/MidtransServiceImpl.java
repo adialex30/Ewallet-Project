@@ -1,6 +1,5 @@
 package com.vois.simpleewalletsystem.service.impl;
 
-import com.midtrans.httpclient.error.MidtransError;
 import com.midtrans.service.MidtransCoreApi;
 import com.midtrans.service.MidtransSnapApi;
 import com.vois.simpleewalletsystem.entity.User;
@@ -42,8 +41,8 @@ public class MidtransServiceImpl implements MidtransService {
 
         try {
             return midtransSnapApi.createTransaction(params);
-        } catch (MidtransError e) {
-            log.error("Midtrans createTransaction failed for order {}: {}", orderId, e.getMessage());
+        } catch (Exception e) {
+            log.error("Midtrans createTransaction failed for order {}: {}", orderId, e.toString(), e);
             throw new PaymentGatewayException("Failed to create top up transaction with Midtrans", e);
         }
     }
@@ -52,8 +51,8 @@ public class MidtransServiceImpl implements MidtransService {
     public JSONObject checkTransactionStatus(String orderId) {
         try {
             return midtransCoreApi.checkTransaction(orderId);
-        } catch (MidtransError e) {
-            log.error("Midtrans checkTransaction failed for order {}: {}", orderId, e.getMessage());
+        } catch (Exception e) {
+            log.error("Midtrans checkTransaction failed for order {}: {}", orderId, e.toString(), e);
             throw new PaymentGatewayException("Failed to check transaction status with Midtrans", e);
         }
     }

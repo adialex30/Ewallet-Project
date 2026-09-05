@@ -15,9 +15,6 @@ export default function ProfilePage() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      // The backend has no GET /api/users/me, so we get our own numeric id
-      // the same way TopupServiceImpl does internally: via our own wallet
-      // (WalletResponse.userId), then fetch the full profile by that id.
       const wallet = await getMyWallet()
       const me = await getUserById(wallet.userId)
       setUser(me)

@@ -1,5 +1,4 @@
 import { formatCurrency } from '../utils/formatCurrency'
-import Spinner from './Spinner'
 
 export default function BalanceCard({ balance, loading, onTopUp, onRefresh, refreshing }) {
   return (

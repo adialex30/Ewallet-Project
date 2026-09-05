@@ -8,11 +8,6 @@ import { getMyTransactions, getAllTransactions } from '../api/transactionApi'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 
-// Standalone full-history view (nav: "Riwayat Transaksi"), open to every role -
-// but what it shows differs by role:
-//  - USER: their own wallet's history (GET /api/transactions), same as before.
-//  - ADMIN: a system-wide activity log across every user (GET /api/transactions/all),
-//    since an admin's own wallet history isn't what "monitoring users" means.
 export default function TransactionsPage() {
   const { isAdmin } = useAuth()
 
@@ -39,7 +34,6 @@ export default function TransactionsPage() {
       })
       .catch((err) => toast.error(err.message || 'Gagal memuat riwayat transaksi.'))
       .finally(() => setLoading(false))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin])
 
   const filteredTransactions = useMemo(() => {

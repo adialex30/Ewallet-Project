@@ -15,12 +15,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             Long destinationWalletId
     );
 
-    /** Admin-only system-wide activity log. */
     List<Transaction> findAllByOrderByCreatedAtDesc();
-
-    /**
-     * Used by the Midtrans webhook handler to find which pending topup
-     * a notification belongs to.
-     */
     Optional<Transaction> findByOrderId(String orderId);
 }

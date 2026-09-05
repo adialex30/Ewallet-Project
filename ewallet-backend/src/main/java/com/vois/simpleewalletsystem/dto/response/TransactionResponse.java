@@ -19,8 +19,6 @@ public class TransactionResponse {
     private LocalDateTime createdAt;
     private Long sourceWalletId;
     private Long destinationWalletId;
-
-    /** Who the money moved from/to - lets the UI show a name instead of a bare wallet id. */
     private String sourceUserFullName;
     private String sourceUserEmail;
     private String destinationUserFullName;

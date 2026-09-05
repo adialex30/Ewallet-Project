@@ -12,13 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/*
- * NOTE: deposit/withdraw/transfer are no longer exposed from this controller.
- * They now live in their own dedicated, ID-less, current-user-scoped
- * endpoints: TopupController (/api/topup), WalletController (/api/wallet/withdraw),
- * and TransferController (/api/transfer) - matching the Mini Wallet API spec,
- * which resolves the acting wallet from the JWT rather than a path variable.
- */
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Transactions", description = "Transaction history (mutasi)")

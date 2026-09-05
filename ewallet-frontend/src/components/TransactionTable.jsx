@@ -19,7 +19,6 @@ function describeTransaction(tx, myWalletId) {
   if (tx.type === 'WITHDRAW') {
     return { label: 'Tarik Saldo', direction: 'out' }
   }
-  // TRANSFER - show who the counterparty was, when we know their name.
   if (tx.destinationWalletId === myWalletId) {
     const from = tx.sourceUserFullName
     return { label: from ? `Transfer Masuk dari ${from}` : 'Transfer Masuk', direction: 'in' }

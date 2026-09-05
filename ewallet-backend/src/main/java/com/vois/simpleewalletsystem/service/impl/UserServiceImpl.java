@@ -162,7 +162,6 @@ public class UserServiceImpl implements UserService {
         log.info("User activated successfully with id {}", id);
     }
 
-    /** Treats blank as "no phone number" so it's stored as NULL, not "" (which would collide under the unique constraint). */
     private String normalizePhoneNumber(String phoneNumber) {
         return (phoneNumber == null || phoneNumber.isBlank()) ? null : phoneNumber;
     }

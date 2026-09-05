@@ -46,7 +46,6 @@ export default function DashboardPage() {
   useEffect(() => {
     loadWallet()
     loadTransactions()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const refreshAll = () => {
@@ -56,10 +55,6 @@ export default function DashboardPage() {
 
   const handleTopUpSuccess = () => {
     refreshAll()
-    // The wallet is only actually credited once the Midtrans webhook lands
-    // on the backend, which can be a moment behind the Snap popup closing -
-    // poll once more shortly after so the balance catches up without the
-    // user having to hit refresh themselves.
     setTimeout(refreshAll, 4000)
   }
 

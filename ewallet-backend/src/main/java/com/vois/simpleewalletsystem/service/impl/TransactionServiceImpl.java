@@ -182,11 +182,6 @@ public class TransactionServiceImpl implements TransactionService {
         return convertToDTO(transaction);
     }
 
-    /**
-     * Resolves the wallet belonging to whoever is currently authenticated -
-     * no ID parameter involved, so there is nothing for User A to manipulate
-     * to reach User B's wallet.
-     */
     private Wallet getMyWallet(String userEmail) {
 
         User user = userRepository.findByEmail(userEmail)

@@ -5,11 +5,6 @@ import Spinner from './Spinner'
 
 const EMPTY_FORM = { fullName: '', email: '', phoneNumber: '', password: '', role: 'USER' }
 
-/**
- * mode="create" -> POST /api/users (password + role required)
- * mode="edit"   -> PUT /api/users/{id} (password optional, role not editable -
- *                  backend ignores role on update, see UserServiceImpl.updateUser)
- */
 export default function UserFormModal({ open, mode, user, onClose, onSuccess }) {
   const [form, setForm] = useState(EMPTY_FORM)
   const [errors, setErrors] = useState({})
@@ -52,7 +47,6 @@ export default function UserFormModal({ open, mode, user, onClose, onSuccess }) 
           fullName: form.fullName,
           email: form.email,
           phoneNumber: form.phoneNumber,
-          // Blank means "keep current password" - see UserUpdateRequest on the backend.
           password: form.password.trim() === '' ? null : form.password,
         })
         toast.success('Perubahan berhasil disimpan.')
